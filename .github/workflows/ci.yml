@@ -1,0 +1,22 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - stage
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  call-reusable-workflow:
+    uses: abdosaad203/reusable-frontend-ci/.github/workflows/frontend-ci.yml@main
+
+    with:
+      node-version: '22'
+      run-tests: false
+      image-name: 'frontend'
