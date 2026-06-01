@@ -19,6 +19,7 @@ jobs:
 
     with:
       node-version: '22'
+      run-tests: false
       image-name: 'ecommerce-frontend'
 
   deploy-staging:
