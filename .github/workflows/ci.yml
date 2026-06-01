@@ -4,19 +4,91 @@ on:
   push:
     branches:
       - main
-      - stage
+      - stg
 
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
-  call-reusable-workflow:
+
+  build-and-push:
     uses: abdosaad203/reusable-frontend-ci/.github/workflows/frontend-ci.yml@main
 
     with:
       node-version: '22'
-      run-tests: false
-      image-name: 'frontend'
+      image-name: 'ecommerce-frontend'
+
+  deploy-staging:
+    needs: build-and-push
+
+    if: github.ref == 'refs/heads/stg'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set image tag
+        run: |
+          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: abdosaad203/ecommerce-gitops
+          token: ${{ secrets.GITOPS_PAT }}
+          path: gitops
+
+      - name: Update staging image tag
+        run: |
+          sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" gitops/environments/stg/ecommerce-ui.yaml
+
+      - name: Commit and push
+        run: |
+          cd gitops
+
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add .
+
+          git commit -m "update frontend staging image to ${IMAGE_TAG}" || echo "No changes"
+
+          git push
+
+  deploy-production:
+    needs: build-and-push
+
+    if: github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set image tag
+        run: |
+          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: abdosaad203/ecommerce-gitops
+          token: ${{ secrets.GITOPS_PAT }}
+          path: gitops
+
+      - name: Update production image tag
+        run: |
+          sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" gitops/environments/prod/ecommerce-ui.yaml
+
+      - name: Commit and push
+        run: |
+          cd gitops
+
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add .
+
+          git commit -m "update frontend production image to ${IMAGE_TAG}" || echo "No changes"
+
+          git push
