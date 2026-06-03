@@ -17,6 +17,8 @@ jobs:
   build-and-push:
     uses: abdosaad203/reusable-frontend-ci/.github/workflows/frontend-ci.yml@main
 
+    secrets: inherit
+    
     with:
       node-version: '22'
       run-tests: false
