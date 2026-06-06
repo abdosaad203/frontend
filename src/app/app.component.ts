@@ -8,7 +8,7 @@ import { AuthService } from './auth/auth.service';
   imports: [RouterOutlet, RouterLink],
   template: `
     <nav class="navbar">
-      <a class="brand" routerLink="/catalog">🛒 E-Commerce</a>
+      <a class="brand" routerLink="/catalog">🛒 E-Commerce v2</a>
       <div class="nav-links">
         <a routerLink="/catalog">Products</a>
         @if (auth.isLoggedIn()) {
